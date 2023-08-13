@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IITs, NITs, and IIITs</title>
+<style>
+  /* ... Your existing styles ... */
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+  }
+  .container {
+    width: 80%;
+    margin: auto;
+    padding: 20px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  th, td {
+    padding: 12px;
+    border-bottom: 1px solid #dddddd;
+  }
+  th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+  }
+  tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  .search-container {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+  }
+  #searchInput {
+    padding: 10px;
+    border: 1px solid #dddddd;
+    border-radius: 5px;
+    flex-grow: 1;
+    margin-right: 10px;
+  }
+  button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  button:hover {
+    background-color: #0056b3;
+  }
+  #pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  #pagination button {
+    margin: 0 5px;
+    background-color: #f56363;
+    border: none;
+    border-radius: 50%;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  #pagination button:hover {
+    background-color: #dddddd;
+  }
+  /* Additional styling for details container */
+  .details {
+    background-color: #f2f2f2;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 5px;
+  }
+  
+  /* Additional styling for detailed table container */
+  .details-container {
+    background-color: #f4f4f4;
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 10px;
+  }
+
+  .details {
+    display: none;
+    background-color: #f2f2f2;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 5px;
+  }
+  .details.active {
+    display: block;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="Search for institution...">
+    <button onclick="searchTable()">Search</button>
+  </div>
+  <table id="data-table">
+    <tr>
+      <th>Institution</th>
+    </tr>
+  </table>
+  <div id="pagination"></div>
+</div>
+
+<script>
+const institutions = [
+{"logo":{"id":"logo/aqga7uzj0vcmcbvkshtd","secure_url":"https://res.cloudinary.com/ddxco6opc/image/upload/v1691904758/logo/aqga7uzj0vcmcbvkshtd.png"},"_id":"64d86af6af6700e0bff4c035","name":"Indian Institute of Information Technology kalyani (iiiit k)","email":"tnp@iiiitkalyani.ac.in","phoneNumber":"8978987612","noOfStudents":89,"noOfStudentsPlaced":10,"user":"64d7d7dac24e868ecb6fb174","createdAt":"2023-08-13T05:32:38.958Z","__v":0},{"logo":{"id":"logo/hh9ymkoszqkcvzztzlqw","secure_url":"https://res.cloudinary.com/ddxco6opc/image/upload/v1691916329/logo/hh9ymkoszqkcvzztzlqw.png"},"_id":"64d89828bc789136d20c999b","name":"Indian Institute of Information Technology bhangalpur (iiit B)","email":"tnp@iiiitbhagalpur.ac.in","phoneNumber":"9865789123","noOfStudents":120,"noOfStudentsPlaced":30,"user":"64d7d7dac24e868ecb6fb174","createdAt":"2023-08-13T08:45:28.501Z","__v":0},{"logo":{"id":"logo/idi44cadycvvdokdc8v6","secure_url":"https://res.cloudinary.com/ddxco6opc/image/upload/v1691916453/logo/idi44cadycvvdokdc8v6.png"},"_id":"64d898a5bc789136d20c999f","name":"Indian Institute of Information Technology kota (iiit k)","email":"tnp@iiitkota.ac.in","phoneNumber":"9865789122","noOfStudents":111,"noOfStudentsPlaced":100,"user":"64d7d7dac24e868ecb6fb174","createdAt":"2023-08-13T08:47:33.519Z","__v":0},{"logo":{"id":"logo/qde6s6pkli0asv1mukdi","secure_url":"https://res.cloudinary.com/ddxco6opc/image/upload/v1691916577/logo/qde6s6pkli0asv1mukdi.png"},"_id":"64d89920bc789136d20c99a3","name":"national institute of technology suratkal (nit k) ","email":"tnp@nitsuratkal.ac.in","phoneNumber":"9865781123","noOfStudents":122,"noOfStudentsPlaced":12,"user":"64d7d7dac24e868ecb6fb174","createdAt":"2023-08-13T08:49:37.003Z","__v":0}
+  // ... Add more institutions with details
+];
+
+const itemsPerPage = 10;
+let currentPage = 1;
+
+function renderTable(page) {
+  const table = document.getElementById("data-table");
+  table.innerHTML = `
+    <tr>
+      <th>Institution</th>
+    </tr>
+    ${institutions
+      .slice((page - 1) * itemsPerPage, page * itemsPerPage)
+      .map(
+        (institution, index) => `
+          <tr>
+            <td>
+              <div 
+                class="institution-button" 
+                onmouseover="showDetails(${index})"
+                onmouseout="hideDetails(${index})"
+                onclick="openDetails('${institution.name}', '${institution.details}')">
+                ${institution.name}
+              </div>
+              <div class="details" id="details-${index}">
+                <table>
+                  <tr>
+                    <td><img src=${institution.logo.secure_url} width="100" height="100"></td>
+                    <td>Email: ${institution.email}</td>
+                    <td>Phone Number :${institution.phoneNumber}</td>
+                    <td>Number Of Students:${institution.noOfStudents}</td>
+                    <td>Number Of Students Placed:${institution.noOfStudentsPlaced}</td>
+                  </tr>
+                  <!-- ... Add more rows if needed ... -->
+                </table>
+              </div>
+            </td>
+          </tr>
+        `
+      )
+      .join("")}
+  `;
+}
+
+function showDetails(index) {
+  const detailsElement = document.getElementById(`details-${index}`);
+  detailsElement.classList.add("active");
+}
+
+function hideDetails(index) {
+  const detailsElement = document.getElementById(`details-${index}`);
+  detailsElement.classList.remove("active");
+}
+
+function openDetails(name, details) {
+  // Code for opening detailed view here
+}
+
+// ... The rest of your code ...
+
+// Initial rendering
+renderTable(currentPage);
+renderPagination();
+</script>
+</body>
+</html>
